@@ -15,8 +15,8 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
   const processFile = async (file: File): Promise<Track> => {
     const url = URL.createObjectURL(file);
     let title = file.name.replace(/\.[^/.]+$/, "");
-    let artist = "未知艺术家";
-    let album = "未知专辑";
+    let artist = "Unknown Artist";
+    let album = "Unknown Album";
     let duration = 0;
     let cover: string | undefined;
 
@@ -34,7 +34,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
         cover = URL.createObjectURL(blob);
       }
     } catch (error) {
-      console.error("解析元数据失败:", error);
+      console.error("Failed to parse metadata:", error);
       
       const tempAudio = new Audio();
       tempAudio.src = url;
@@ -61,7 +61,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
 
     const validFiles = Array.from(files).filter(isValidAudioFile);
     if (validFiles.length === 0) {
-      alert("请选择有效的音频文件 (mp3, wav, ogg, flac, m4a, aac)");
+      alert("Please select valid audio files (MP3, WAV, OGG, FLAC, M4A, AAC)");
       return;
     }
 
@@ -93,8 +93,8 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
           <Upload className="w-6 h-6 text-black" />
         </div>
         <div>
-          <p className="text-white font-semibold">上传本地音乐</p>
-          <p className="text-spotify-lightGray text-sm">点击选择文件或将文件拖放到此处</p>
+          <p className="text-white font-semibold">Upload local music</p>
+          <p className="text-spotify-lightGray text-sm">Click to select files or drag and drop here</p>
         </div>
       </label>
     </div>
