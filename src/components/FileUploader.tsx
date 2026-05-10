@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
 import { Upload } from 'lucide-react';
+import { parseMp3Header } from 'mp3-parser';
 import { usePlayerStore } from '../store/usePlayerStore';
 import { Track } from '../types';
 import { generateId, isValidAudioFile } from '../utils';
@@ -68,110 +69,202 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
     const result: ParsedMetadata = {};
     
     try {
-      const { parseBlob } = await import('music-metadata-browser');
       console.log('🎵 Parsing file:', file.name);
       
-      const metadata = await parseBlob(file);
-      console.log('✅ Metadata loaded:', JSON.stringify(metadata, null, 2));
+      const buffer = await file.arrayBuffer();
+      const uint8Array = new Uint8Array(buffer);
       
-      // 详细输出 common 标签
-      if (metadata.common) {
-        console.log('📋 Common tags:', {
-          title: metadata.common.title,
-          artist: metadata.common.artist,
-          album: metadata.common.album,
-          year: metadata.common.year,
-          track: metadata.common.track,
-          genre: metadata.common.genre,
-          picture: metadata.common.picture?.length || 0,
-          lyrics: metadata.common.lyrics?.length || 0,
-        });
+      // 尝试解析 MP3 头部
+      try {
+        const header = parseMp3Header(uint8Array);
+        if (header) {
+          console.log('✅ MP3 header parsed:', header);
+          if (header.bitrate) {
+            console.log('✓ Bitrate:', header.bitrate);
+          }
+        }
+      } catch (err) {
+        console.log('MP3 header parse failed, trying ID3...');
+      }
+      
+      // 手动解析 ID3v2 标签
+      if (uint8Array[0] === 0x49 && uint8Array[1] === 0x44 && uint8Array[2] === 0x33) {
+        console.log('📋 Found ID3v2 tag');
         
-        // 直接提取字段
-        if (metadata.common.title) {
-          result.title = metadata.common.title;
-          console.log('✓ Title found:', result.title);
-        }
-        if (metadata.common.artist) {
-          result.artist = Array.isArray(metadata.common.artist) 
-            ? metadata.common.artist.join(', ') 
-            : metadata.common.artist;
-          console.log('✓ Artist found:', result.artist);
-        }
-        if (metadata.common.album) {
-          result.album = metadata.common.album;
-          console.log('✓ Album found:', result.album);
-        }
-        if (metadata.common.year) {
-          result.year = metadata.common.year.toString();
-          console.log('✓ Year found:', result.year);
-        }
-        if (metadata.common.track?.no) {
-          result.trackNumber = metadata.common.track.no;
-          console.log('✓ Track number found:', result.trackNumber);
-        }
-        if (metadata.common.genre && metadata.common.genre.length > 0) {
-          result.genre = metadata.common.genre.join(', ');
-          console.log('✓ Genre found:', result.genre);
-        }
-      }
-      
-      if (metadata.format?.duration) {
-        result.duration = metadata.format.duration;
-        console.log('✓ Duration found:', result.duration);
-      }
-      
-      // 提取封面
-      if (metadata.common.picture && metadata.common.picture.length > 0) {
-        try {
-          const pic = metadata.common.picture[0];
-          const data = pic.data;
-          const uint8Array = data instanceof Uint8Array ? data : new Uint8Array(data as ArrayBuffer);
-          const blob = new Blob([uint8Array], { type: pic.format || 'image/jpeg' });
-          result.cover = URL.createObjectURL(blob);
-          console.log('✓ Cover found');
-        } catch (coverError) {
-          console.error('Failed to extract cover:', coverError);
-        }
-      }
-      
-      // 提取歌词
-      if (metadata.common.lyrics && metadata.common.lyrics.length > 0) {
-        const lyricsData = metadata.common.lyrics[0];
-        if (typeof lyricsData === 'string') {
-          result.lyrics = parseLyrics(lyricsData);
-          console.log('✓ Lyrics found (string)');
-        } else if (typeof lyricsData === 'object' && lyricsData !== null) {
-          const lyricsObj = lyricsData as any;
-          result.lyrics = parseLyrics(lyricsObj.text || '');
-          console.log('✓ Lyrics found (object)');
-        }
-      }
-      
-      // 尝试从 native ID3 标签中提取
-      const native = (metadata as any).native;
-      if (native && !result.lyrics) {
-        console.log('📋 Checking native ID3 tags...');
-        const id3Tags = native['ID3'] || native['id3'] || [];
-        for (const tag of id3Tags) {
-          console.log(`  Tag: ${tag.id} = ${JSON.stringify(tag.value)}`);
+        const version = uint8Array[3];
+        const flags = uint8Array[5];
+        const size = ((uint8Array[6] & 0x7f) << 21) | 
+                     ((uint8Array[7] & 0x7f) << 14) | 
+                     ((uint8Array[8] & 0x7f) << 7) | 
+                     (uint8Array[9] & 0x7f);
+        
+        console.log('ID3v2 version:', version, 'size:', size);
+        
+        let offset = 10;
+        const endOffset = offset + size;
+        
+        while (offset < endOffset - 10) {
+          const frameId = String.fromCharCode(
+            uint8Array[offset],
+            uint8Array[offset + 1],
+            uint8Array[offset + 2],
+            uint8Array[offset + 3]
+          );
           
-          if (tag.id === 'USLT' || tag.id === 'USLT: lyrics') {
-            if (tag.value?.text) {
-              result.lyrics = parseLyrics(tag.value.text);
-              console.log('✓ Lyrics found from USLT');
-              break;
+          if (frameId[0] === '\0') break;
+          
+          const frameSize = (uint8Array[offset + 4] << 24) | 
+                           (uint8Array[offset + 5] << 16) | 
+                           (uint8Array[offset + 6] << 8) | 
+                           uint8Array[offset + 7];
+          
+          console.log(`Found frame: ${frameId} (size: ${frameSize})`);
+          
+          const frameData = uint8Array.slice(offset + 10, offset + 10 + frameSize);
+          
+          // TIT2 = Title
+          if (frameId === 'TIT2') {
+            result.title = readText(frameData);
+            console.log('✓ Title:', result.title);
+          }
+          // TPE1 = Artist
+          else if (frameId === 'TPE1') {
+            result.artist = readText(frameData);
+            console.log('✓ Artist:', result.artist);
+          }
+          // TALB = Album
+          else if (frameId === 'TALB') {
+            result.album = readText(frameData);
+            console.log('✓ Album:', result.album);
+          }
+          // TYER = Year
+          else if (frameId === 'TYER' || frameId === 'TDRC') {
+            result.year = readText(frameData);
+            console.log('✓ Year:', result.year);
+          }
+          // TRCK = Track
+          else if (frameId === 'TRCK') {
+            const trackStr = readText(frameData);
+            result.trackNumber = parseInt(trackStr);
+            console.log('✓ Track:', result.trackNumber);
+          }
+          // TCON = Genre
+          else if (frameId === 'TCON') {
+            result.genre = readText(frameData);
+            console.log('✓ Genre:', result.genre);
+          }
+          // APIC = Picture
+          else if (frameId === 'APIC') {
+            try {
+              const coverUrl = extractCover(frameData);
+              if (coverUrl) {
+                result.cover = coverUrl;
+                console.log('✓ Cover extracted');
+              }
+            } catch (err) {
+              console.error('Failed to extract cover:', err);
             }
+          }
+          // USLT = Unsynchronized lyrics
+          else if (frameId === 'USLT') {
+            result.lyrics = parseLyrics(readText(frameData));
+            console.log('✓ Lyrics found');
+          }
+          
+          offset += 10 + frameSize;
+        }
+      } else {
+        console.log('No ID3v2 tag found, checking for ID3v1...');
+        
+        // ID3v1 标签在文件末尾
+        if (buffer.byteLength > 128) {
+          const view = new DataView(buffer, buffer.byteLength - 128, 128);
+          if (view.getUint8(0) === 0x54 && view.getUint8(1) === 0x41 && view.getUint8(2) === 0x47) {
+            console.log('Found ID3v1 tag');
+            
+            result.title = readString(view, 3, 30).trim();
+            result.artist = readString(view, 33, 30).trim();
+            result.album = readString(view, 63, 30).trim();
+            result.year = readString(view, 93, 4).trim();
+            
+            console.log('✓ ID3v1 title:', result.title);
+            console.log('✓ ID3v1 artist:', result.artist);
+            console.log('✓ ID3v1 album:', result.album);
           }
         }
       }
       
+      console.log('📤 Final result:', result);
     } catch (error) {
       console.error('❌ Metadata parsing error:', error);
     }
     
-    console.log('📤 Final result:', result);
     return result;
+  };
+
+  const readText = (data: Uint8Array): string => {
+    let encoding = data[0];
+    let text = '';
+    
+    if (encoding === 0 || encoding === 3) {
+      // ISO-8859-1 or UTF-8
+      text = new TextDecoder('utf-8').decode(data.slice(1));
+    } else if (encoding === 1) {
+      // UTF-16
+      text = new TextDecoder('utf-16le').decode(data.slice(1));
+    } else {
+      text = new TextDecoder('utf-8').decode(data);
+    }
+    
+    return text.replace(/\0+$/, '').trim();
+  };
+
+  const readString = (view: DataView, offset: number, length: number): string => {
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      const char = view.getUint8(offset + i);
+      if (char === 0) break;
+      result += String.fromCharCode(char);
+    }
+    return result;
+  };
+
+  const extractCover = (data: Uint8Array): string | null => {
+    try {
+      let textOffset = 0;
+      const encoding = data[0];
+      
+      // 跳过文本编码、mimetype 和 0 分隔符
+      for (let i = 1; i < data.length; i++) {
+        if (data[i] === 0) {
+          textOffset = i + 1;
+          break;
+        }
+      }
+      
+      // 跳过图片类型和描述
+      for (let i = textOffset; i < data.length; i++) {
+        if (data[i] === 0) {
+          textOffset = i + 1;
+          break;
+        }
+      }
+      
+      const imageData = data.slice(textOffset);
+      const base64 = arrayBufferToBase64(imageData.buffer);
+      return `data:image/jpeg;base64,${base64}`;
+    } catch (error) {
+      return null;
+    }
+  };
+
+  const arrayBufferToBase64 = (buffer: ArrayBuffer): string => {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
   };
 
   const processFile = async (file: File): Promise<Track> => {
@@ -194,23 +287,23 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
     if (metadata.year) year = metadata.year;
     if (metadata.trackNumber) trackNumber = metadata.trackNumber;
     if (metadata.genre) genre = metadata.genre;
-    if (metadata.duration) duration = metadata.duration;
     if (metadata.cover) cover = metadata.cover;
     if (metadata.lyrics) lyrics = metadata.lyrics;
 
-    if (duration === 0) {
-      try {
-        const tempAudio = new Audio();
-        tempAudio.src = url;
-        await new Promise<void>((resolve) => {
-          tempAudio.onloadedmetadata = () => resolve();
-          tempAudio.onerror = () => resolve();
-          setTimeout(() => resolve(), 5000);
-        });
-        duration = tempAudio.duration || 0;
-      } catch (error) {
-        console.error('Failed to get duration:', error);
-      }
+    // 获取时长
+    try {
+      const tempAudio = new Audio();
+      tempAudio.src = url;
+      await new Promise<void>((resolve) => {
+        tempAudio.onloadedmetadata = () => {
+          duration = tempAudio.duration;
+          resolve();
+        };
+        tempAudio.onerror = () => resolve();
+        setTimeout(() => resolve(), 5000);
+      });
+    } catch (error) {
+      console.error('Failed to get duration:', error);
     }
 
     console.log('✅ Track created:', { title, artist, album, duration });
