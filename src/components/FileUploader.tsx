@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import { Upload } from 'lucide-react';
 import { usePlayerStore } from '../store/usePlayerStore';
 import { Track } from '../types';
@@ -27,7 +27,6 @@ interface ParsedMetadata {
 
 const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
   const { setPlaylist, addToPlaylist, setCurrentTrack, playlist } = usePlayerStore();
-  const [debugInfo, setDebugInfo] = useState<string>('');
 
   const parseLyrics = (lyricsText: string): string => {
     if (!lyricsText) return '';
@@ -72,13 +71,6 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
       const { parseBlob } = await import('music-metadata-browser');
       const metadata = await parseBlob(file);
       
-      console.log('✅ Metadata parsed successfully');
-      console.log('📋 Full metadata:', metadata);
-      console.log('📋 Common tags:', metadata.common);
-      console.log('📋 Format:', metadata.format);
-      
-      setDebugInfo(`✅ Metadata loaded\nTitle: ${metadata.common.title}\nArtist: ${metadata.common.artist}\nAlbum: ${metadata.common.album}`);
-      
       if (metadata.common.title) result.title = metadata.common.title;
       if (metadata.common.artist) result.artist = metadata.common.artist;
       if (metadata.common.album) result.album = metadata.common.album;
@@ -98,7 +90,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
           const blob = new Blob([uint8Array], { type: pic.format || 'image/jpeg' });
           result.cover = URL.createObjectURL(blob);
         } catch (coverError) {
-          console.error('❌ Failed to extract cover:', coverError);
+          console.error('Failed to extract cover:', coverError);
         }
       }
       
@@ -129,8 +121,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
       }
       
     } catch (error) {
-      console.error('❌ Metadata parsing error:', error);
-      setDebugInfo(`❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('Metadata parsing error:', error);
     }
     
     return result;
@@ -164,9 +155,9 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
       try {
         const tempAudio = new Audio();
         tempAudio.src = url;
-        await new Promise<void>((resolve, reject) => {
+        await new Promise<void>((resolve) => {
           tempAudio.onloadedmetadata = () => resolve();
-          tempAudio.onerror = () => reject(new Error('Failed to load audio'));
+          tempAudio.onerror = () => resolve();
           setTimeout(() => resolve(), 5000);
         });
         duration = tempAudio.duration || 0;
@@ -174,8 +165,6 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
         console.error('Failed to get duration:', error);
       }
     }
-
-    console.log('✅ Track processed:', { title, artist, album, duration });
 
     return {
       id: generateId(),
@@ -202,23 +191,13 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
       return;
     }
 
-    setDebugInfo(`Processing ${validFiles.length} files...`);
-
-    try {
-      const tracks = await Promise.all(validFiles.map(processFile));
-      
-      if (playlist.length === 0) {
-        setPlaylist(tracks);
-        setCurrentTrack(tracks[0]);
-      } else {
-        tracks.forEach(track => addToPlaylist(track));
-      }
-      
-      setDebugInfo(`✅ Added ${tracks.length} tracks\n\nTrack Info:\n${tracks.map(t => `${t.title} - ${t.artist}`).join('\n')}`);
-      
-    } catch (error) {
-      console.error('Error processing files:', error);
-      setDebugInfo(`❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    const tracks = await Promise.all(validFiles.map(processFile));
+    
+    if (playlist.length === 0) {
+      setPlaylist(tracks);
+      setCurrentTrack(tracks[0]);
+    } else {
+      tracks.forEach(track => addToPlaylist(track));
     }
   }, [playlist, setPlaylist, setCurrentTrack, addToPlaylist]);
 
@@ -244,12 +223,6 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
           <p className="text-spotify-lightGray text-sm">支持 ID3 标签、专辑封面和歌词</p>
         </div>
       </label>
-      
-      {debugInfo && (
-        <div className="mt-4 p-3 bg-spotify-gray rounded-lg text-xs">
-          <pre className="text-green-400 whitespace-pre-wrap">{debugInfo}</pre>
-        </div>
-      )}
     </div>
   );
 };
