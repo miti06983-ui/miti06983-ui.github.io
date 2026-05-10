@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Mail, Lock, User, Eye, EyeOff, UserPlus } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
+import EmailVerification from './EmailVerification';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -13,7 +14,10 @@ interface RegisterPageProps {
   onClose?: () => void;
 }
 
+type RegisterStep = 'form' | 'verification';
+
 const RegisterPage: React.FC<RegisterPageProps> = ({ onSwitchToLogin, onClose }) => {
+  const [step, setStep] = useState<RegisterStep>('form');
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -38,41 +42,78 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onSwitchToLogin, onClose })
     const errors: typeof formErrors = {};
     
     if (!email) {
-      errors.email = 'Email is required';
+      errors.email = '邮箱不能为空';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errors.email = 'Invalid email format';
+      errors.email = '邮箱格式不正确';
     }
     
     if (!username) {
-      errors.username = 'Username is required';
+      errors.username = '用户名不能为空';
     } else if (username.length < 3) {
-      errors.username = 'Username must be at least 3 characters';
+      errors.username = '用户名至少3个字符';
     }
     
     if (!password) {
-      errors.password = 'Password is required';
+      errors.password = '密码不能为空';
     } else if (password.length < 6) {
-      errors.password = 'Password must be at least 6 characters';
+      errors.password = '密码至少6个字符';
     }
     
     if (!confirmPassword) {
-      errors.confirmPassword = 'Please confirm your password';
+      errors.confirmPassword = '请确认密码';
     } else if (password !== confirmPassword) {
-      errors.confirmPassword = 'Passwords do not match';
+      errors.confirmPassword = '两次密码不一致';
     }
     
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleNextStep = () => {
     clearError();
     
     if (validateForm()) {
-      await register(email, username, password);
+      setStep('verification');
     }
   };
+
+  const handleVerificationSuccess = async () => {
+    clearError();
+    const success = await register(email, username, password);
+    
+    if (success) {
+      onClose?.();
+    } else {
+      setStep('form');
+    }
+  };
+
+  const handleBackToForm = () => {
+    setStep('form');
+  };
+
+  if (step === 'verification') {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
+        
+        <div className="relative w-full max-w-md bg-spotify-dark rounded-xl p-8 shadow-2xl">
+          <button 
+            onClick={onClose}
+            className="absolute top-4 right-4 text-spotify-lightGray hover:text-white transition-colors"
+          >
+            ×
+          </button>
+
+          <EmailVerification 
+            email={email}
+            onVerified={handleVerificationSuccess}
+            onBack={handleBackToForm}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -90,14 +131,14 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onSwitchToLogin, onClose })
           <div className="w-16 h-16 bg-spotify-green rounded-full flex items-center justify-center mx-auto mb-4">
             <UserPlus className="w-8 h-8 text-black" />
           </div>
-          <h2 className="text-2xl font-bold text-white mb-2">Create Account</h2>
-          <p className="text-spotify-lightGray">Sign up to get started</p>
+          <h2 className="text-2xl font-bold text-white mb-2">创建账户</h2>
+          <p className="text-spotify-lightGray">填写信息完成注册</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={(e) => { e.preventDefault(); handleNextStep(); }} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-spotify-lightGray mb-2">
-              Email Address
+              邮箱地址
             </label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-spotify-lightGray" />
@@ -119,7 +160,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onSwitchToLogin, onClose })
 
           <div>
             <label className="block text-sm font-medium text-spotify-lightGray mb-2">
-              Username
+              用户名
             </label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-spotify-lightGray" />
@@ -131,7 +172,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onSwitchToLogin, onClose })
                   "w-full pl-10 pr-4 py-3 bg-spotify-gray border rounded-lg text-white placeholder-spotify-lightGray focus:outline-none focus:ring-2 focus:ring-spotify-green transition-all",
                   formErrors.username ? "border-red-500" : "border-transparent"
                 )}
-                placeholder="Your username"
+                placeholder="输入用户名"
               />
             </div>
             {formErrors.username && (
@@ -141,7 +182,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onSwitchToLogin, onClose })
 
           <div>
             <label className="block text-sm font-medium text-spotify-lightGray mb-2">
-              Password
+              密码
             </label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-spotify-lightGray" />
@@ -153,7 +194,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onSwitchToLogin, onClose })
                   "w-full pl-10 pr-12 py-3 bg-spotify-gray border rounded-lg text-white placeholder-spotify-lightGray focus:outline-none focus:ring-2 focus:ring-spotify-green transition-all",
                   formErrors.password ? "border-red-500" : "border-transparent"
                 )}
-                placeholder="••••••••"
+                placeholder="至少6个字符"
               />
               <button
                 type="button"
@@ -170,7 +211,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onSwitchToLogin, onClose })
 
           <div>
             <label className="block text-sm font-medium text-spotify-lightGray mb-2">
-              Confirm Password
+              确认密码
             </label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-spotify-lightGray" />
@@ -182,7 +223,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onSwitchToLogin, onClose })
                   "w-full pl-10 pr-4 py-3 bg-spotify-gray border rounded-lg text-white placeholder-spotify-lightGray focus:outline-none focus:ring-2 focus:ring-spotify-green transition-all",
                   formErrors.confirmPassword ? "border-red-500" : "border-transparent"
                 )}
-                placeholder="••••••••"
+                placeholder="再次输入密码"
               />
             </div>
             {formErrors.confirmPassword && (
@@ -204,12 +245,12 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onSwitchToLogin, onClose })
             {isLoading ? (
               <>
                 <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-                Creating account...
+                注册中...
               </>
             ) : (
               <>
                 <UserPlus className="w-5 h-5" />
-                Create Account
+                继续
               </>
             )}
           </button>
@@ -217,12 +258,12 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onSwitchToLogin, onClose })
 
         <div className="mt-6 text-center">
           <p className="text-spotify-lightGray">
-            Already have an account?{' '}
+            已有账户？{' '}
             <button
               onClick={onSwitchToLogin}
               className="text-spotify-green hover:underline font-medium"
             >
-              Sign in
+              立即登录
             </button>
           </p>
         </div>
