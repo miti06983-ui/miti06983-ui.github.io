@@ -1,12 +1,17 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Sidebar from './components/Sidebar';
 import MainContent from './components/MainContent';
 import PlayerBar from './components/PlayerBar';
 import LyricsPanel from './components/LyricsPanel';
 import ImmersivePlayer from './components/ImmersivePlayer';
+import { AuthModal } from './components/Auth';
 import { usePlayerStore } from './store/usePlayerStore';
+import { useAuthStore } from './store/useAuthStore';
 
 const App: React.FC = () => {
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authModalView, setAuthModalView] = useState<'login' | 'register'>('login');
+  
   const {
     togglePlay,
     nextTrack,
@@ -20,6 +25,8 @@ const App: React.FC = () => {
     toggleShowLyrics,
     toggleShowImmersive
   } = usePlayerStore();
+  
+  const { isAuthenticated } = useAuthStore();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -80,15 +87,38 @@ const App: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [togglePlay, nextTrack, prevTrack, toggleShuffle, toggleRepeat, toggleMute, setVolume, volume, currentTrack, toggleShowLyrics, toggleShowImmersive]);
 
+  const openLoginModal = () => {
+    setAuthModalView('login');
+    setShowAuthModal(true);
+  };
+
+  const openRegisterModal = () => {
+    setAuthModalView('register');
+    setShowAuthModal(true);
+  };
+
   return (
     <div className="h-screen flex flex-col bg-black text-white overflow-hidden">
       <div className="flex-1 flex gap-2 p-2 pb-0 overflow-hidden">
-        <Sidebar className="w-80 flex-shrink-0" />
+        <Sidebar 
+          className="w-80 flex-shrink-0" 
+          onLogin={openLoginModal}
+          onRegister={openRegisterModal}
+          isAuthenticated={isAuthenticated}
+        />
         <MainContent className="flex-1" />
       </div>
       <PlayerBar className="flex-shrink-0" />
       <LyricsPanel />
       <ImmersivePlayer />
+      
+      {showAuthModal && (
+        <AuthModal 
+          isOpen={showAuthModal} 
+          onClose={() => setShowAuthModal(false)}
+          initialView={authModalView}
+        />
+      )}
     </div>
   );
 };
