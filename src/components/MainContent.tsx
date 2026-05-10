@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
-import { ChevronLeft, ChevronRight, User, Search, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, Trash2, LogIn, UserPlus } from 'lucide-react';
 import { usePlayerStore } from '../store/usePlayerStore';
+import { UserMenu } from './Auth';
 import FileUploader from './FileUploader';
 import PlaylistItem from './PlaylistItem';
 import { clsx, type ClassValue } from 'clsx';
@@ -12,9 +13,17 @@ function cn(...inputs: ClassValue[]) {
 
 interface MainContentProps {
   className?: string;
+  onLogin?: () => void;
+  onRegister?: () => void;
+  isAuthenticated?: boolean;
 }
 
-const MainContent: React.FC<MainContentProps> = ({ className }) => {
+const MainContent: React.FC<MainContentProps> = ({ 
+  className,
+  onLogin,
+  onRegister,
+  isAuthenticated = false
+}) => {
   const { playlist, searchQuery, setSearchQuery, clearPlaylist } = usePlayerStore();
 
   const filteredPlaylist = useMemo(() => {
@@ -44,9 +53,27 @@ const MainContent: React.FC<MainContentProps> = ({ className }) => {
           <button className="bg-spotify-green text-black px-4 py-1.5 rounded-full text-sm font-semibold hover:scale-105 transition-transform">
             Explore
           </button>
-          <button className="w-8 h-8 bg-black/70 rounded-full flex items-center justify-center text-white hover:bg-black/90">
-            <User className="w-5 h-5" />
-          </button>
+          
+          {isAuthenticated ? (
+            <UserMenu />
+          ) : (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={onLogin}
+                className="flex items-center gap-2 px-4 py-2 bg-white text-black rounded-full text-sm font-semibold hover:scale-105 transition-transform"
+              >
+                <LogIn className="w-4 h-4" />
+                Sign In
+              </button>
+              <button
+                onClick={onRegister}
+                className="flex items-center gap-2 px-4 py-2 bg-spotify-green text-black rounded-full text-sm font-semibold hover:scale-105 transition-transform"
+              >
+                <UserPlus className="w-4 h-4" />
+                Sign Up
+              </button>
+            </div>
+          )}
         </div>
       </header>
 
