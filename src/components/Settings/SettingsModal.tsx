@@ -27,13 +27,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   const tabs = [
-    { id: 'audio' as const, label: '音频', icon: Volume2 },
-    { id: 'display' as const, label: '显示', icon: Monitor },
-    { id: 'playback' as const, label: '播放', icon: Play },
-    { id: 'notifications' as const, label: '通知', icon: Bell },
-    { id: 'privacy' as const, label: '隐私', icon: Shield },
-    { id: 'storage' as const, label: '存储', icon: HardDrive },
-    { id: 'network' as const, label: '网络', icon: Wifi },
+    { id: 'audio' as const, label: 'Audio', icon: Volume2 },
+    { id: 'display' as const, label: 'Display', icon: Monitor },
+    { id: 'playback' as const, label: 'Playback', icon: Play },
+    { id: 'notifications' as const, label: 'Notifications', icon: Bell },
+    { id: 'privacy' as const, label: 'Privacy', icon: Shield },
+    { id: 'storage' as const, label: 'Storage', icon: HardDrive },
+    { id: 'network' as const, label: 'Network', icon: Wifi },
   ];
 
   return (
@@ -41,7 +41,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-spotify-dark rounded-xl w-full max-w-4xl h-[80vh] flex overflow-hidden shadow-2xl">
         <div className="w-64 bg-black/30 p-4 flex flex-col">
-          <h2 className="text-xl font-bold text-white mb-6 px-4">设置</h2>
+          <h2 className="text-xl font-bold text-white mb-6 px-4">Settings</h2>
           <nav className="flex-1 space-y-1">
             {tabs.map((tab) => (
               <button
@@ -64,7 +64,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
             className="flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/20 rounded-lg transition-all mt-4"
           >
             <RotateCcw className="w-5 h-5" />
-            重置设置
+            Reset Settings
           </button>
         </div>
 
@@ -78,9 +78,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
 
           {activeTab === 'audio' && (
             <div className="space-y-8">
-              <h3 className="text-2xl font-bold text-white mb-6">音频设置</h3>
+              <h3 className="text-2xl font-bold text-white mb-6">Audio Settings</h3>
               
-              <SettingItem label="播放音量" description="调整默认播放音量">
+              <SettingItem label="Playback Volume" description="Adjust default playback volume">
                 <input
                   type="range"
                   min="0"
@@ -92,25 +92,25 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                 <span className="text-spotify-lightGray text-sm mt-1">{audio.volume}%</span>
               </SettingItem>
 
-              <SettingItem label="均衡器预设" description="选择音频均衡预设">
+              <SettingItem label="Equalizer Preset" description="Select audio equalizer preset">
                 <select
                   value={audio.equalizerPreset}
                   onChange={(e) => setAudioSetting('equalizerPreset', e.target.value)}
                   className="bg-spotify-gray text-white px-4 py-2 rounded-lg border border-white/10 focus:border-spotify-green focus:outline-none"
                 >
-                  <option value="flat">平坦</option>
-                  <option value="bass">低音增强</option>
-                  <option value="treble">高音增强</option>
-                  <option value="vocal">人声增强</option>
-                  <option value="rock">摇滚</option>
-                  <option value="jazz">爵士</option>
-                  <option value="classical">古典</option>
-                  <option value="electronic">电子</option>
-                  <option value="custom">自定义</option>
+                  <option value="flat">Flat</option>
+                  <option value="bass">Bass Boost</option>
+                  <option value="treble">Treble Boost</option>
+                  <option value="vocal">Vocal Boost</option>
+                  <option value="rock">Rock</option>
+                  <option value="jazz">Jazz</option>
+                  <option value="classical">Classical</option>
+                  <option value="electronic">Electronic</option>
+                  <option value="custom">Custom</option>
                 </select>
               </SettingItem>
 
-              <SettingItem label="低音" description="自定义低频增益">
+              <SettingItem label="Bass" description="Custom low frequency gain">
                 <input
                   type="range"
                   min="0"
@@ -121,7 +121,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                 />
               </SettingItem>
 
-              <SettingItem label="中音" description="自定义中频增益">
+              <SettingItem label="Mid" description="Custom mid frequency gain">
                 <input
                   type="range"
                   min="0"
@@ -132,7 +132,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                 />
               </SettingItem>
 
-              <SettingItem label="高音" description="自定义高频增益">
+              <SettingItem label="Treble" description="Custom high frequency gain">
                 <input
                   type="range"
                   min="0"
@@ -144,21 +144,21 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
               </SettingItem>
 
               <ToggleSetting
-                label="自动播放"
-                description="应用启动时自动开始播放"
+                label="Auto Play"
+                description="Automatically start playback on app launch"
                 checked={audio.autoPlay}
                 onChange={(checked) => setAudioSetting('autoPlay', checked)}
               />
 
               <ToggleSetting
-                label="交叉淡入淡出"
-                description="曲目切换时平滑过渡"
+                label="Crossfade"
+                description="Smooth transition between tracks"
                 checked={audio.crossfade}
                 onChange={(checked) => setAudioSetting('crossfade', checked)}
               />
 
               {audio.crossfade && (
-                <SettingItem label="淡入淡出时长" description="设置交叉淡入淡出的持续时间">
+                <SettingItem label="Crossfade Duration" description="Set crossfade transition duration">
                   <input
                     type="range"
                     min="1"
@@ -167,27 +167,27 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                     onChange={(e) => setAudioSetting('crossfadeDuration', Number(e.target.value))}
                     className="w-full h-2 bg-spotify-gray rounded-lg appearance-none cursor-pointer accent-spotify-green"
                   />
-                  <span className="text-spotify-lightGray text-sm mt-1">{audio.crossfadeDuration}秒</span>
+                  <span className="text-spotify-lightGray text-sm mt-1">{audio.crossfadeDuration}s</span>
                 </SettingItem>
               )}
 
               <ToggleSetting
-                label="音量标准化"
-                description="自动调整音量为一致水平"
+                label="Volume Normalization"
+                description="Automatically adjust volume to consistent level"
                 checked={audio.normalizeVolume}
                 onChange={(checked) => setAudioSetting('normalizeVolume', checked)}
               />
 
               <ToggleSetting
-                label="单声道音频"
-                description="将所有音频混合为单声道"
+                label="Mono Audio"
+                description="Mix all audio to mono"
                 checked={audio.monoAudio}
                 onChange={(checked) => setAudioSetting('monoAudio', checked)}
               />
 
               <ToggleSetting
-                label="空间音频"
-                description="启用杜比全景声效果"
+                label="Spatial Audio"
+                description="Enable Dolby Atmos effect"
                 checked={audio.spatialAudio}
                 onChange={(checked) => setAudioSetting('spatialAudio', checked)}
               />
@@ -196,9 +196,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
 
           {activeTab === 'display' && (
             <div className="space-y-8">
-              <h3 className="text-2xl font-bold text-white mb-6">显示设置</h3>
+              <h3 className="text-2xl font-bold text-white mb-6">Display Settings</h3>
               
-              <SettingItem label="主题" description="选择应用界面主题">
+              <SettingItem label="Theme" description="Choose app interface theme">
                 <div className="flex gap-2">
                   {(['dark', 'light', 'auto'] as const).map((theme) => (
                     <button
@@ -211,25 +211,25 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                           : "bg-spotify-gray text-white hover:bg-white/20"
                       )}
                     >
-                      {theme === 'dark' ? '深色' : theme === 'light' ? '浅色' : '自动'}
+                      {theme === 'dark' ? 'Dark' : theme === 'light' ? 'Light' : 'Auto'}
                     </button>
                   ))}
                 </div>
               </SettingItem>
 
-              <SettingItem label="字体大小" description="调整界面字体大小">
+              <SettingItem label="Font Size" description="Adjust interface font size">
                 <select
                   value={display.fontSize}
                   onChange={(e) => setDisplaySetting('fontSize', e.target.value as 'small' | 'medium' | 'large')}
                   className="bg-spotify-gray text-white px-4 py-2 rounded-lg border border-white/10 focus:border-spotify-green focus:outline-none"
                 >
-                  <option value="small">小</option>
-                  <option value="medium">中</option>
-                  <option value="large">大</option>
+                  <option value="small">Small</option>
+                  <option value="medium">Medium</option>
+                  <option value="large">Large</option>
                 </select>
               </SettingItem>
 
-              <SettingItem label="语言" description="选择界面显示语言">
+              <SettingItem label="Language" description="Choose interface display language">
                 <select
                   value={display.language}
                   onChange={(e) => setDisplaySetting('language', e.target.value)}
@@ -243,52 +243,52 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
               </SettingItem>
 
               <ToggleSetting
-                label="紧凑模式"
-                description="使用更紧凑的界面布局"
+                label="Compact Mode"
+                description="Use more compact interface layout"
                 checked={display.compactMode}
                 onChange={(checked) => setDisplaySetting('compactMode', checked)}
               />
 
               <ToggleSetting
-                label="显示专辑封面"
-                description="在播放器中显示专辑封面"
+                label="Show Album Art"
+                description="Display album artwork in player"
                 checked={display.showAlbumArt}
                 onChange={(checked) => setDisplaySetting('showAlbumArt', checked)}
               />
 
               <ToggleSetting
-                label="显示歌词"
-                description="在播放时显示同步歌词"
+                label="Show Lyrics"
+                description="Display synced lyrics during playback"
                 checked={display.showLyrics}
                 onChange={(checked) => setDisplaySetting('showLyrics', checked)}
               />
 
-              <SettingItem label="歌词来源" description="选择歌词获取方式">
+              <SettingItem label="Lyrics Source" description="Choose lyrics retrieval method">
                 <select
                   value={display.lyricsSource}
                   onChange={(e) => setDisplaySetting('lyricsSource', e.target.value as 'local' | 'synced')}
                   className="bg-spotify-gray text-white px-4 py-2 rounded-lg border border-white/10 focus:border-spotify-green focus:outline-none"
                 >
-                  <option value="local">本地歌词</option>
-                  <option value="synced">在线同步</option>
+                  <option value="local">Local Lyrics</option>
+                  <option value="synced">Online Synced</option>
                 </select>
               </SettingItem>
 
-              <SettingItem label="动画速度" description="调整界面动画速度">
+              <SettingItem label="Animation Speed" description="Adjust interface animation speed">
                 <select
                   value={display.animationSpeed}
                   onChange={(e) => setDisplaySetting('animationSpeed', e.target.value as 'slow' | 'normal' | 'fast')}
                   className="bg-spotify-gray text-white px-4 py-2 rounded-lg border border-white/10 focus:border-spotify-green focus:outline-none"
                 >
-                  <option value="slow">慢</option>
-                  <option value="normal">正常</option>
-                  <option value="fast">快</option>
+                  <option value="slow">Slow</option>
+                  <option value="normal">Normal</option>
+                  <option value="fast">Fast</option>
                 </select>
               </SettingItem>
 
               <ToggleSetting
-                label="减少动画"
-                description="减少界面动画效果以提高性能"
+                label="Reduced Motion"
+                description="Reduce interface animations for better performance"
                 checked={display.reducedMotion}
                 onChange={(checked) => setDisplaySetting('reducedMotion', checked)}
               />
@@ -297,42 +297,42 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
 
           {activeTab === 'playback' && (
             <div className="space-y-8">
-              <h3 className="text-2xl font-bold text-white mb-6">播放设置</h3>
+              <h3 className="text-2xl font-bold text-white mb-6">Playback Settings</h3>
               
-              <SettingItem label="快进时长" description="设置单次快进的秒数">
+              <SettingItem label="Skip Forward Duration" description="Set seconds to skip forward">
                 <select
                   value={playback.skipForwardAmount}
                   onChange={(e) => setPlaybackSetting('skipForwardAmount', Number(e.target.value))}
                   className="bg-spotify-gray text-white px-4 py-2 rounded-lg border border-white/10 focus:border-spotify-green focus:outline-none"
                 >
-                  <option value="5">5秒</option>
-                  <option value="10">10秒</option>
-                  <option value="15">15秒</option>
-                  <option value="30">30秒</option>
+                  <option value="5">5 seconds</option>
+                  <option value="10">10 seconds</option>
+                  <option value="15">15 seconds</option>
+                  <option value="30">30 seconds</option>
                 </select>
               </SettingItem>
 
-              <SettingItem label="快退时长" description="设置单次快退的秒数">
+              <SettingItem label="Skip Backward Duration" description="Set seconds to skip backward">
                 <select
                   value={playback.skipBackwardAmount}
                   onChange={(e) => setPlaybackSetting('skipBackwardAmount', Number(e.target.value))}
                   className="bg-spotify-gray text-white px-4 py-2 rounded-lg border border-white/10 focus:border-spotify-green focus:outline-none"
                 >
-                  <option value="5">5秒</option>
-                  <option value="10">10秒</option>
-                  <option value="15">15秒</option>
-                  <option value="30">30秒</option>
+                  <option value="5">5 seconds</option>
+                  <option value="10">10 seconds</option>
+                  <option value="15">15 seconds</option>
+                  <option value="30">30 seconds</option>
                 </select>
               </SettingItem>
 
               <ToggleSetting
-                label="随机播放"
-                description="启用随机播放顺序"
+                label="Shuffle Playback"
+                description="Enable random playback order"
                 checked={playback.shuffle}
                 onChange={(checked) => setPlaybackSetting('shuffle', checked)}
               />
 
-              <SettingItem label="循环模式" description="设置播放结束后的行为">
+              <SettingItem label="Repeat Mode" description="Set behavior when playback ends">
                 <div className="flex gap-2">
                   {(['none', 'all', 'one'] as const).map((mode) => (
                     <button
@@ -345,29 +345,29 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                           : "bg-spotify-gray text-white hover:bg-white/20"
                       )}
                     >
-                      {mode === 'none' ? '关闭' : mode === 'all' ? '全部循环' : '单曲循环'}
+                      {mode === 'none' ? 'Off' : mode === 'all' ? 'Repeat All' : 'Repeat One'}
                     </button>
                   ))}
                 </div>
               </SettingItem>
 
               <ToggleSetting
-                label="无缝播放"
-                description="曲目切换时消除间隙"
+                label="Gapless Playback"
+                description="Eliminate gaps between tracks"
                 checked={playback.gaplessPlayback}
                 onChange={(checked) => setPlaybackSetting('gaplessPlayback', checked)}
               />
 
               <ToggleSetting
-                label="自动播放相似歌曲"
-                description="播放结束时自动推荐相似歌曲"
+                label="Autoplay Similar Songs"
+                description="Auto-recommend similar songs when playback ends"
                 checked={playback.autoplaySimilar}
                 onChange={(checked) => setPlaybackSetting('autoplaySimilar', checked)}
               />
 
               <ToggleSetting
-                label="启动时恢复播放"
-                description="应用启动时恢复上次播放位置"
+                label="Resume on Startup"
+                description="Resume last playback position on app launch"
                 checked={playback.resumeOnStartup}
                 onChange={(checked) => setPlaybackSetting('resumeOnStartup', checked)}
               />
@@ -376,39 +376,39 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
 
           {activeTab === 'notifications' && (
             <div className="space-y-8">
-              <h3 className="text-2xl font-bold text-white mb-6">通知设置</h3>
+              <h3 className="text-2xl font-bold text-white mb-6">Notification Settings</h3>
               
               <ToggleSetting
-                label="启用通知"
-                description="允许应用发送通知"
+                label="Enable Notifications"
+                description="Allow app to send notifications"
                 checked={notifications.enabled}
                 onChange={(checked) => setNotificationSetting('enabled', checked)}
               />
 
               <ToggleSetting
-                label="新曲目提醒"
-                description="播放新曲目时显示通知"
+                label="New Track Alert"
+                description="Show notification when playing new track"
                 checked={notifications.newTrackAlert}
                 onChange={(checked) => setNotificationSetting('newTrackAlert', checked)}
               />
 
               <ToggleSetting
-                label="下载完成通知"
-                description="下载完成时发送通知"
+                label="Download Complete"
+                description="Send notification when download completes"
                 checked={notifications.downloadComplete}
                 onChange={(checked) => setNotificationSetting('downloadComplete', checked)}
               />
 
               <ToggleSetting
-                label="社交动态"
-                description="接收关注者的动态更新"
+                label="Social Updates"
+                description="Receive updates from followers"
                 checked={notifications.socialUpdates}
                 onChange={(checked) => setNotificationSetting('socialUpdates', checked)}
               />
 
               <ToggleSetting
-                label="音效"
-                description="播放界面操作音效"
+                label="Sound Effects"
+                description="Play sound effects for interface actions"
                 checked={notifications.soundEffects}
                 onChange={(checked) => setNotificationSetting('soundEffects', checked)}
               />
@@ -417,32 +417,32 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
 
           {activeTab === 'privacy' && (
             <div className="space-y-8">
-              <h3 className="text-2xl font-bold text-white mb-6">隐私设置</h3>
+              <h3 className="text-2xl font-bold text-white mb-6">Privacy Settings</h3>
               
               <ToggleSetting
-                label="显示动态"
-                description="允许他人查看你的听歌动态"
+                label="Show Activity"
+                description="Allow others to view your listening activity"
                 checked={privacy.showActivity}
                 onChange={(checked) => setPrivacySetting('showActivity', checked)}
               />
 
               <ToggleSetting
-                label="显示听歌统计"
-                description="在个人资料中显示听歌统计数据"
+                label="Show Listening Stats"
+                description="Display listening statistics on profile"
                 checked={privacy.showListeningStats}
                 onChange={(checked) => setPrivacySetting('showListeningStats', checked)}
               />
 
               <ToggleSetting
-                label="数据分析"
-                description="允许收集使用数据以改进服务"
+                label="Analytics"
+                description="Allow usage data collection to improve service"
                 checked={privacy.analyticsEnabled}
                 onChange={(checked) => setPrivacySetting('analyticsEnabled', checked)}
               />
 
               <ToggleSetting
-                label="历史记录"
-                description="保存播放历史记录"
+                label="History Tracking"
+                description="Save playback history"
                 checked={privacy.historyTracking}
                 onChange={(checked) => setPrivacySetting('historyTracking', checked)}
               />
@@ -451,9 +451,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
 
           {activeTab === 'storage' && (
             <div className="space-y-8">
-              <h3 className="text-2xl font-bold text-white mb-6">存储设置</h3>
+              <h3 className="text-2xl font-bold text-white mb-6">Storage Settings</h3>
               
-              <SettingItem label="缓存大小限制" description="设置最大缓存存储空间">
+              <SettingItem label="Cache Size Limit" description="Set maximum cache storage space">
                 <input
                   type="range"
                   min="100"
@@ -466,43 +466,43 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                 <span className="text-spotify-lightGray text-sm mt-1">{storage.cacheSize} MB</span>
               </SettingItem>
 
-              <SettingItem label="缓存过期时间" description="设置缓存保留的天数">
+              <SettingItem label="Cache Expiry" description="Set number of days to keep cache">
                 <select
                   value={storage.maxCacheAge}
                   onChange={(e) => setStorageSetting('maxCacheAge', Number(e.target.value))}
                   className="bg-spotify-gray text-white px-4 py-2 rounded-lg border border-white/10 focus:border-spotify-green focus:outline-none"
                 >
-                  <option value="7">7天</option>
-                  <option value="14">14天</option>
-                  <option value="30">30天</option>
-                  <option value="60">60天</option>
-                  <option value="90">90天</option>
+                  <option value="7">7 days</option>
+                  <option value="14">14 days</option>
+                  <option value="30">30 days</option>
+                  <option value="60">60 days</option>
+                  <option value="90">90 days</option>
                 </select>
               </SettingItem>
 
-              <SettingItem label="下载音质" description="选择离线下载的音乐质量">
+              <SettingItem label="Download Quality" description="Choose offline music download quality">
                 <select
                   value={storage.downloadQuality}
                   onChange={(e) => setStorageSetting('downloadQuality', e.target.value as 'low' | 'medium' | 'high' | 'very-high')}
                   className="bg-spotify-gray text-white px-4 py-2 rounded-lg border border-white/10 focus:border-spotify-green focus:outline-none"
                 >
-                  <option value="low">低 (96 kbps)</option>
-                  <option value="medium">中 (160 kbps)</option>
-                  <option value="high">高 (320 kbps)</option>
-                  <option value="very-high">极高 (FLAC)</option>
+                  <option value="low">Low (96 kbps)</option>
+                  <option value="medium">Medium (160 kbps)</option>
+                  <option value="high">High (320 kbps)</option>
+                  <option value="very-high">Very High (FLAC)</option>
                 </select>
               </SettingItem>
 
               <ToggleSetting
-                label="自动下载"
-                description="自动下载新添加的歌曲"
+                label="Auto Download"
+                description="Automatically download newly added songs"
                 checked={storage.autoDownload}
                 onChange={(checked) => setStorageSetting('autoDownload', checked)}
               />
 
               <ToggleSetting
-                label="仅WiFi下载"
-                description="仅在连接WiFi时下载内容"
+                label="WiFi Only Download"
+                description="Only download content when connected to WiFi"
                 checked={storage.downloadOnWifiOnly}
                 onChange={(checked) => setStorageSetting('downloadOnWifiOnly', checked)}
               />
@@ -511,31 +511,31 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
 
           {activeTab === 'network' && (
             <div className="space-y-8">
-              <h3 className="text-2xl font-bold text-white mb-6">网络设置</h3>
+              <h3 className="text-2xl font-bold text-white mb-6">Network Settings</h3>
               
-              <SettingItem label="流媒体音质" description="选择在线播放的音乐质量">
+              <SettingItem label="Streaming Quality" description="Choose online playback music quality">
                 <select
                   value={network.streamingQuality}
                   onChange={(e) => setNetworkSetting('streamingQuality', e.target.value as 'low' | 'medium' | 'high' | 'very-high' | 'lossless')}
                   className="bg-spotify-gray text-white px-4 py-2 rounded-lg border border-white/10 focus:border-spotify-green focus:outline-none"
                 >
-                  <option value="low">低 (96 kbps)</option>
-                  <option value="medium">中 (160 kbps)</option>
-                  <option value="high">高 (320 kbps)</option>
-                  <option value="very-high">极高 (FLAC)</option>
-                  <option value="lossless">无损 (Hi-Res)</option>
+                  <option value="low">Low (96 kbps)</option>
+                  <option value="medium">Medium (160 kbps)</option>
+                  <option value="high">High (320 kbps)</option>
+                  <option value="very-high">Very High (FLAC)</option>
+                  <option value="lossless">Lossless (Hi-Res)</option>
                 </select>
               </SettingItem>
 
               <ToggleSetting
-                label="启用代理"
-                description="使用代理服务器连接"
+                label="Enable Proxy"
+                description="Use proxy server for connections"
                 checked={network.proxyEnabled}
                 onChange={(checked) => setNetworkSetting('proxyEnabled', checked)}
               />
 
               {network.proxyEnabled && (
-                <SettingItem label="代理服务器地址" description="输入代理服务器的URL">
+                <SettingItem label="Proxy Server Address" description="Enter proxy server URL">
                   <input
                     type="text"
                     value={network.proxyUrl}
@@ -546,7 +546,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                 </SettingItem>
               )}
 
-              <SettingItem label="带宽限制" description="限制最大带宽使用 (0为不限制)">
+              <SettingItem label="Bandwidth Limit" description="Limit maximum bandwidth usage (0 = unlimited)">
                 <input
                   type="range"
                   min="0"
@@ -557,20 +557,20 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                   className="w-full h-2 bg-spotify-gray rounded-lg appearance-none cursor-pointer accent-spotify-green"
                 />
                 <span className="text-spotify-lightGray text-sm mt-1">
-                  {network.bandwidthLimit === 0 ? '不限制' : `${network.bandwidthLimit} Mbps`}
+                  {network.bandwidthLimit === 0 ? 'Unlimited' : `${network.bandwidthLimit} Mbps`}
                 </span>
               </SettingItem>
 
               <ToggleSetting
-                label="预加载歌词"
-                description="播放时预先加载歌词"
+                label="Pre-fetch Lyrics"
+                description="Pre-load lyrics during playback"
                 checked={network.preFetchLyrics}
                 onChange={(checked) => setNetworkSetting('preFetchLyrics', checked)}
               />
 
               <ToggleSetting
-                label="预加载专辑"
-                description="预先加载相邻曲目"
+                label="Preload Albums"
+                description="Pre-load adjacent tracks"
                 checked={network.preloadAlbums}
                 onChange={(checked) => setNetworkSetting('preloadAlbums', checked)}
               />
