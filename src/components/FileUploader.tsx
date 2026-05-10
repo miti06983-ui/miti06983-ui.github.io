@@ -76,9 +76,6 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
     try {
       const metadata = await parseBlob(file);
       
-      console.log('Metadata parsed:', metadata);
-      console.log('Common tags:', metadata.common);
-      
       // Extract basic ID3 tags
       if (metadata.common.title) title = metadata.common.title;
       if (metadata.common.artist) artist = metadata.common.artist;
