@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { Upload } from 'lucide-react';
 import { parseMp3Header } from 'mp3-parser';
 import { usePlayerStore } from '../store/usePlayerStore';
@@ -28,6 +28,7 @@ interface ParsedMetadata {
 
 const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
   const { setPlaylist, addToPlaylist, setCurrentTrack, playlist } = usePlayerStore();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const parseLyrics = (lyricsText: string): string => {
     if (!lyricsText) return '';
@@ -232,7 +233,6 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
   const extractCover = (data: Uint8Array): string | null => {
     try {
       let textOffset = 0;
-      const encoding = data[0];
       
       // 跳过文本编码、mimetype 和 0 分隔符
       for (let i = 1; i < data.length; i++) {
@@ -323,7 +323,9 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
     };
   };
 
-  const handleFileSelect = useCallback(async (files: FileList | null) => {
+  const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    
     if (!files || files.length === 0) return;
 
     const validFiles = Array.from(files).filter(isValidAudioFile);
@@ -342,17 +344,23 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
     } else {
       tracks.forEach(track => addToPlaylist(track));
     }
+    
+    // 清空 input 的值，以便可以再次选择相同的文件
+    if (inputRef.current) {
+      inputRef.current.value = '';
+    }
   }, [playlist, setPlaylist, setCurrentTrack, addToPlaylist]);
 
   return (
     <div className={className}>
       <input
+        ref={inputRef}
         type="file"
         id="file-upload"
         multiple
         accept="audio/*"
         className="hidden"
-        onChange={(e) => handleFileSelect(e.target.files)}
+        onChange={handleFileSelect}
       />
       <label
         htmlFor="file-upload"
