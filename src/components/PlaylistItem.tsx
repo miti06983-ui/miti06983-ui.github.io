@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, MoreHorizontal } from 'lucide-react';
+import { Play, MoreHorizontal, Heart } from 'lucide-react';
 import { Track } from '../types';
 import { usePlayerStore } from '../store/usePlayerStore';
 import { formatTime } from '../utils';
@@ -10,13 +10,18 @@ interface PlaylistItemProps {
 }
 
 const PlaylistItem: React.FC<PlaylistItemProps> = ({ track, index }) => {
-  const { currentTrack, isPlaying, setCurrentTrack, setIsPlaying, setCurrentTime } = usePlayerStore();
+  const { currentTrack, isPlaying, setCurrentTrack, setIsPlaying, setCurrentTime, toggleLikeTrack } = usePlayerStore();
   const isCurrentTrack = currentTrack?.id === track.id;
 
   const handlePlay = () => {
     setCurrentTrack(track);
     setCurrentTime(0);
     setIsPlaying(true);
+  };
+
+  const handleLike = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleLikeTrack(track.id);
   };
 
   return (
@@ -61,6 +66,20 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({ track, index }) => {
       <div className="hidden md:block text-sm text-spotify-lightGray">{track.album}</div>
 
       <div className="flex items-center gap-2">
+        <button 
+          onClick={handleLike}
+          className={`p-2 transition-opacity opacity-0 group-hover:opacity-100 ${
+            track.isLiked ? 'opacity-100' : ''
+          }`}
+        >
+          <Heart 
+            className={`w-4 h-4 ${
+              track.isLiked 
+                ? 'text-spotify-green fill-spotify-green' 
+                : 'text-spotify-lightGray hover:text-white'
+            }`} 
+          />
+        </button>
         <span className="text-sm text-spotify-lightGray">{formatTime(track.duration)}</span>
         <button className="p-2 text-spotify-lightGray hover:text-white opacity-0 group-hover:opacity-100 transition-opacity">
           <MoreHorizontal className="w-4 h-4" />

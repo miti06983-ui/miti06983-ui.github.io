@@ -21,20 +21,21 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
   isMuted: false,
   repeatMode: 'none',
   shuffle: false,
+  searchQuery: '',
 
   setCurrentTrack: (track: Track | null) => set({ currentTrack: track }),
   
   setPlaylist: (playlist: Track[]) => set({ playlist }),
   
   addToPlaylist: (track: Track) => set((state) => ({ 
-    playlist: [...state.playlist, track] 
+    playlist: [...state.playlist, { ...track, isLiked: false }] 
   })),
   
   removeFromPlaylist: (trackId: string) => set((state) => ({
     playlist: state.playlist.filter(t => t.id !== trackId)
   })),
   
-  clearPlaylist: () => set({ playlist: [], currentTrack: null, isPlaying: false }),
+  clearPlaylist: () => set({ playlist: [], currentTrack: null, isPlaying: false, searchQuery: '' }),
   
   togglePlay: () => set((state) => ({ isPlaying: !state.isPlaying })),
   
@@ -98,4 +99,17 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
       currentTime: 0
     };
   }),
+
+  toggleLikeTrack: (trackId: string) => set((state) => ({
+    playlist: state.playlist.map(track => 
+      track.id === trackId 
+        ? { ...track, isLiked: !track.isLiked }
+        : track
+    ),
+    currentTrack: state.currentTrack?.id === trackId 
+      ? { ...state.currentTrack, isLiked: !state.currentTrack.isLiked }
+      : state.currentTrack
+  })),
+
+  setSearchQuery: (query: string) => set({ searchQuery: query }),
 }));

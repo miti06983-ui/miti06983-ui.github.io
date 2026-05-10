@@ -7,6 +7,7 @@ export interface Track {
   file: File;
   url: string;
   cover?: string;
+  isLiked?: boolean;
 }
 
 export interface PlayerState {
@@ -18,6 +19,7 @@ export interface PlayerState {
   isMuted: boolean;
   repeatMode: 'none' | 'all' | 'one';
   shuffle: boolean;
+  searchQuery: string;
 }
 
 export interface PlayerActions {
@@ -35,4 +37,6 @@ export interface PlayerActions {
   toggleShuffle: () => void;
   nextTrack: () => void;
   prevTrack: () => void;
+  toggleLikeTrack: (trackId: string) => void;
+  setSearchQuery: (query: string) => void;
 }

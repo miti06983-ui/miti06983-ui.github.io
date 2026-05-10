@@ -11,7 +11,8 @@ import {
   VolumeX,
   Mic,
   ListMusic,
-  Maximize2
+  Maximize2,
+  Heart
 } from 'lucide-react';
 import { usePlayerStore } from '../store/usePlayerStore';
 import { formatTime } from '../utils';
@@ -43,6 +44,7 @@ const PlayerBar: React.FC<PlayerBarProps> = ({ className }) => {
     toggleShuffle,
     nextTrack,
     prevTrack,
+    toggleLikeTrack
   } = usePlayerStore();
 
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -120,6 +122,12 @@ const PlayerBar: React.FC<PlayerBarProps> = ({ className }) => {
     setVolume(parseFloat(e.target.value));
   };
 
+  const handleLike = () => {
+    if (currentTrack) {
+      toggleLikeTrack(currentTrack.id);
+    }
+  };
+
   return (
     <div className={cn("bg-spotify-black border-t border-white/10 px-4 py-3 flex items-center justify-between gap-4", className)}>
       <audio ref={audioRef} />
@@ -142,6 +150,18 @@ const PlayerBar: React.FC<PlayerBarProps> = ({ className }) => {
                 {currentTrack.artist}
               </p>
             </div>
+            <button 
+              onClick={handleLike}
+              className="text-spotify-lightGray hover:text-white ml-2"
+            >
+              <Heart 
+                className={`w-4 h-4 ${
+                  currentTrack.isLiked 
+                    ? 'text-spotify-green fill-spotify-green' 
+                    : ''
+                }`} 
+              />
+            </button>
           </>
         ) : (
           <div className="w-14 h-14 bg-spotify-gray rounded" />
