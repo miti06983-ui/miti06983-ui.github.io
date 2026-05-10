@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Search, Library, Music, Plus } from 'lucide-react';
+import { Home, Search, Library, Music, Plus, Settings } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -9,9 +9,10 @@ function cn(...inputs: ClassValue[]) {
 
 interface SidebarProps {
   className?: string;
+  onOpenSettings?: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ className }) => {
+const Sidebar: React.FC<SidebarProps> = ({ className, onOpenSettings }) => {
   return (
     <div className={cn("flex flex-col gap-2 h-full", className)}>
       <div className="bg-spotify-dark rounded-lg p-4">
@@ -30,6 +31,13 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
             <Search className="w-6 h-6" />
             <span>Search</span>
           </a>
+          <button 
+            onClick={onOpenSettings}
+            className="flex items-center gap-4 text-spotify-lightGray font-semibold hover:text-white transition-colors"
+          >
+            <Settings className="w-6 h-6" />
+            <span>Settings</span>
+          </button>
         </nav>
       </div>
 

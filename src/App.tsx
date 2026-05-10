@@ -5,12 +5,14 @@ import PlayerBar from './components/PlayerBar';
 import LyricsPanel from './components/LyricsPanel';
 import ImmersivePlayer from './components/ImmersivePlayer';
 import { AuthModal } from './components/Auth';
+import { SettingsModal } from './components/Settings';
 import { usePlayerStore } from './store/usePlayerStore';
 import { useAuthStore } from './store/useAuthStore';
 
 const App: React.FC = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authModalView, setAuthModalView] = useState<'login' | 'register'>('login');
+  const [showSettings, setShowSettings] = useState(false);
   
   const {
     togglePlay,
@@ -100,7 +102,7 @@ const App: React.FC = () => {
   return (
     <div className="h-screen flex flex-col bg-black text-white overflow-hidden">
       <div className="flex-1 flex gap-2 p-2 pb-0 overflow-hidden">
-        <Sidebar className="w-80 flex-shrink-0" />
+        <Sidebar className="w-80 flex-shrink-0" onOpenSettings={() => setShowSettings(true)} />
         <MainContent 
           className="flex-1"
           onLogin={openLoginModal}
@@ -117,6 +119,13 @@ const App: React.FC = () => {
           isOpen={showAuthModal} 
           onClose={() => setShowAuthModal(false)}
           initialView={authModalView}
+        />
+      )}
+
+      {showSettings && (
+        <SettingsModal
+          isOpen={showSettings}
+          onClose={() => setShowSettings(false)}
         />
       )}
     </div>
