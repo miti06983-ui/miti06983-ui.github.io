@@ -23,6 +23,7 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
   shuffle: false,
   searchQuery: '',
   showLyrics: false,
+  showImmersive: false,
 
   setCurrentTrack: (track: Track | null) => set({ currentTrack: track }),
   
@@ -115,4 +116,6 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
   setSearchQuery: (query: string) => set({ searchQuery: query }),
   
   toggleShowLyrics: () => set((state) => ({ showLyrics: !state.showLyrics })),
+  
+  toggleShowImmersive: () => set((state) => ({ showImmersive: !state.showImmersive })),
 }));

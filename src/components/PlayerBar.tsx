@@ -47,6 +47,7 @@ const PlayerBar: React.FC<PlayerBarProps> = ({ className }) => {
     prevTrack,
     toggleLikeTrack,
     toggleShowLyrics,
+    toggleShowImmersive,
     showLyrics
   } = usePlayerStore();
 
@@ -138,13 +139,30 @@ const PlayerBar: React.FC<PlayerBarProps> = ({ className }) => {
       <div className="flex items-center gap-4 w-[30%] min-w-[180px]">
         {currentTrack ? (
           <>
-            {currentTrack.cover ? (
-              <img src={currentTrack.cover} alt={currentTrack.title} className="w-14 h-14 rounded" />
-            ) : (
-              <div className="w-14 h-14 bg-spotify-gray rounded flex items-center justify-center">
-                <div className="w-8 h-8 bg-spotify-lightGray rounded" />
+            {/* Album cover - clickable for immersive mode */}
+            <button
+              onClick={toggleShowImmersive}
+              className="group relative"
+            >
+              {currentTrack.cover ? (
+                <div className="w-14 h-14 rounded overflow-hidden">
+                  <img 
+                    src={currentTrack.cover} 
+                    alt={currentTrack.title} 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="w-14 h-14 bg-spotify-gray rounded flex items-center justify-center">
+                  <div className="w-8 h-8 bg-spotify-lightGray rounded" />
+                </div>
+              )}
+              {/* Hover overlay */}
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded">
+                <Maximize2 className="w-6 h-6 text-white" />
               </div>
-            )}
+            </button>
+            
             <div className="min-w-0 flex-1">
               <p className="text-white text-sm font-medium truncate hover:underline cursor-pointer">
                 {currentTrack.title}
@@ -153,6 +171,7 @@ const PlayerBar: React.FC<PlayerBarProps> = ({ className }) => {
                 {currentTrack.artist}
               </p>
             </div>
+            
             <button 
               onClick={handleLike}
               className="text-spotify-lightGray hover:text-white ml-2"
@@ -161,7 +180,7 @@ const PlayerBar: React.FC<PlayerBarProps> = ({ className }) => {
                 className={cn(
                   "w-4 h-4",
                   currentTrack.isLiked ? "text-spotify-green fill-spotify-green" : ""
-                )}
+                )} 
               />
             </button>
           </>

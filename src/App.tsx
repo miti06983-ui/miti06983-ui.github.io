@@ -3,6 +3,7 @@ import Sidebar from './components/Sidebar';
 import MainContent from './components/MainContent';
 import PlayerBar from './components/PlayerBar';
 import LyricsPanel from './components/LyricsPanel';
+import ImmersivePlayer from './components/ImmersivePlayer';
 import { usePlayerStore } from './store/usePlayerStore';
 
 const App: React.FC = () => {
@@ -15,7 +16,8 @@ const App: React.FC = () => {
     toggleMute,
     setVolume,
     currentTrack,
-    toggleShowLyrics
+    toggleShowLyrics,
+    toggleShowImmersive
   } = usePlayerStore();
 
   useEffect(() => {
@@ -76,7 +78,7 @@ const App: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [togglePlay, nextTrack, prevTrack, toggleShuffle, toggleRepeat, toggleMute, setVolume, currentTrack, toggleShowLyrics]);
+  }, [togglePlay, nextTrack, prevTrack, toggleShuffle, toggleRepeat, toggleMute, setVolume, currentTrack, toggleShowLyrics, toggleShowImmersive]);
 
   return (
     <div className="h-screen flex flex-col bg-black text-white overflow-hidden">
@@ -86,6 +88,7 @@ const App: React.FC = () => {
       </div>
       <PlayerBar className="flex-shrink-0" />
       <LyricsPanel />
+      <ImmersivePlayer />
     </div>
   );
 };

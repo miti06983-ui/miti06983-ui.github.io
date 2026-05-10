@@ -25,6 +25,7 @@ export interface PlayerState {
   shuffle: boolean;
   searchQuery: string;
   showLyrics: boolean;
+  showImmersive: boolean;
 }
 
 export interface PlayerActions {
@@ -45,4 +46,5 @@ export interface PlayerActions {
   toggleLikeTrack: (trackId: string) => void;
   setSearchQuery: (query: string) => void;
   toggleShowLyrics: () => void;
+  toggleShowImmersive: () => void;
 }
