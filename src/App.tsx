@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import MainContent from './components/MainContent';
 import PlayerBar from './components/PlayerBar';
+import LyricsPanel from './components/LyricsPanel';
 import { usePlayerStore } from './store/usePlayerStore';
 
 const App: React.FC = () => {
@@ -13,7 +14,8 @@ const App: React.FC = () => {
     toggleRepeat,
     toggleMute,
     setVolume,
-    currentTrack
+    currentTrack,
+    toggleShowLyrics
   } = usePlayerStore();
 
   useEffect(() => {
@@ -62,7 +64,10 @@ const App: React.FC = () => {
           setVolume(v => Math.max(0, v - 0.1));
           break;
         case 'KeyL':
-          if (currentTrack) {
+          if (e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+            toggleShowLyrics();
+          } else if (currentTrack) {
             usePlayerStore.getState().toggleLikeTrack(currentTrack.id);
           }
           break;
@@ -71,7 +76,7 @@ const App: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [togglePlay, nextTrack, prevTrack, toggleShuffle, toggleRepeat, toggleMute, setVolume, currentTrack]);
+  }, [togglePlay, nextTrack, prevTrack, toggleShuffle, toggleRepeat, toggleMute, setVolume, currentTrack, toggleShowLyrics]);
 
   return (
     <div className="h-screen flex flex-col bg-black text-white overflow-hidden">
@@ -80,6 +85,7 @@ const App: React.FC = () => {
         <MainContent className="flex-1" />
       </div>
       <PlayerBar className="flex-shrink-0" />
+      <LyricsPanel />
     </div>
   );
 };

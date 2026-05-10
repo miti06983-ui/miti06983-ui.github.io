@@ -22,6 +22,7 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
   repeatMode: 'none',
   shuffle: false,
   searchQuery: '',
+  showLyrics: false,
 
   setCurrentTrack: (track: Track | null) => set({ currentTrack: track }),
   
@@ -112,4 +113,6 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
   })),
 
   setSearchQuery: (query: string) => set({ searchQuery: query }),
+  
+  toggleShowLyrics: () => set((state) => ({ showLyrics: !state.showLyrics })),
 }));

@@ -3,39 +3,137 @@ import { Upload, FolderOpen } from 'lucide-react';
 import { usePlayerStore } from '../store/usePlayerStore';
 import { Track } from '../types';
 import { generateId, isValidAudioFile } from '../utils';
-import { parseBlob } from 'music-metadata-browser';
+import { parseBlob, type IPicture, type ITextTag } from 'music-metadata-browser';
 
 interface FileUploaderProps {
   className?: string;
 }
 
+interface LyricLine {
+  time: number;
+  text: string;
+}
+
 const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
   const { setPlaylist, addToPlaylist, setCurrentTrack, playlist } = usePlayerStore();
+
+  // Parse LRC format lyrics
+  const parseLyrics = (lyricsText: string): string => {
+    if (!lyricsText) return '';
+    
+    // Check if it's LRC format with timestamps
+    const lrcRegex = /\[(\d{2}):(\d{2})\.(\d{2,3})\](.*)/g;
+    const lines: LyricLine[] = [];
+    let match;
+    
+    // Try to parse as LRC
+    let hasTimestamps = false;
+    const tempLyrics = lyricsText;
+    
+    while ((match = lrcRegex.exec(tempLyrics)) !== null) {
+      hasTimestamps = true;
+      const minutes = parseInt(match[1]);
+      const seconds = parseInt(match[2]);
+      const milliseconds = parseInt(match[3].padEnd(3, '0'));
+      const time = minutes * 60 + seconds + milliseconds / 1000;
+      const text = match[4].trim();
+      
+      if (text) {
+        lines.push({ time, text });
+      }
+    }
+    
+    if (hasTimestamps && lines.length > 0) {
+      // Sort by time
+      lines.sort((a, b) => a.time - b.time);
+      // Return formatted lyrics with timestamps
+      return lines.map(line => `[${formatLyricTime(line.time)}] ${line.text}`).join('\n');
+    }
+    
+    // If not LRC, return plain text
+    return lyricsText.trim();
+  };
+
+  const formatLyricTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    const ms = Math.floor((seconds % 1) * 100);
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
+  };
 
   const processFile = async (file: File): Promise<Track> => {
     const url = URL.createObjectURL(file);
     let title = file.name.replace(/\.[^/.]+$/, "");
     let artist = "Unknown Artist";
     let album = "Unknown Album";
+    let year: string | undefined;
+    let trackNumber: number | undefined;
+    let genre: string | undefined;
     let duration = 0;
     let cover: string | undefined;
+    let lyrics: string | undefined;
 
     try {
       const metadata = await parseBlob(file);
       
+      // Extract basic ID3 tags
       if (metadata.common.title) title = metadata.common.title;
       if (metadata.common.artist) artist = metadata.common.artist;
       if (metadata.common.album) album = metadata.common.album;
+      if (metadata.common.year) year = metadata.common.year.toString();
+      if (metadata.common.track?.no) trackNumber = metadata.common.track.no;
+      if (metadata.common.genre && metadata.common.genre.length > 0) {
+        genre = metadata.common.genre.join(', ');
+      }
+      
       if (metadata.format.duration) duration = metadata.format.duration;
       
+      // Extract cover art from ID3 tags (APIC frame)
       if (metadata.common.picture && metadata.common.picture.length > 0) {
-        const pic = metadata.common.picture[0];
+        const pic: IPicture = metadata.common.picture[0];
         const blob = new Blob([pic.data], { type: pic.format });
         cover = URL.createObjectURL(blob);
       }
+      
+      // Extract lyrics from various ID3 frames
+      if (metadata.common.lyrics && metadata.common.lyrics.length > 0) {
+        lyrics = parseLyrics(metadata.common.lyrics[0].text);
+      } else if (metadata.common.comment && metadata.common.comment.length > 0) {
+        // Sometimes lyrics are stored in comments
+        const lyricComment = metadata.common.comment.find(
+          (comment: ITextTag) => 
+            comment.text.toLowerCase().includes('lyric') || 
+            comment.text.toLowerCase().includes('歌词')
+        );
+        if (lyricComment) {
+          lyrics = parseLyrics(lyricComment.text);
+        }
+      }
+      
+      // Try to extract from unsynchronised lyrics (USLT frame)
+      if (!lyrics && (metadata as any).native) {
+        const nativeTags = (metadata as any).native;
+        for (const tagType of Object.keys(nativeTags)) {
+          const tags = nativeTags[tagType];
+          for (const tag of tags) {
+            if (tag.id === 'USLT' || tag.id === 'LYRICS' || tag.id === 'SYLT') {
+              if (tag.value && tag.value.text) {
+                lyrics = parseLyrics(tag.value.text);
+                break;
+              } else if (typeof tag.value === 'string') {
+                lyrics = parseLyrics(tag.value);
+                break;
+              }
+            }
+          }
+          if (lyrics) break;
+        }
+      }
+      
     } catch (error) {
       console.error("Failed to parse metadata:", error);
       
+      // Fallback to get duration if metadata parsing failed
       const tempAudio = new Audio();
       tempAudio.src = url;
       await new Promise(resolve => {
@@ -49,10 +147,14 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
       title,
       artist,
       album,
+      year,
+      trackNumber,
+      genre,
       duration,
       file,
       url,
       cover,
+      lyrics,
     };
   };
 
@@ -94,7 +196,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
         </div>
         <div>
           <p className="text-white font-semibold">Upload local music</p>
-          <p className="text-spotify-lightGray text-sm">Click to select files or drag and drop here</p>
+          <p className="text-spotify-lightGray text-sm">Supports ID3 tags, album art, and lyrics</p>
         </div>
       </label>
     </div>

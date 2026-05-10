@@ -3,10 +3,14 @@ export interface Track {
   title: string;
   artist: string;
   album: string;
+  year?: string;
+  trackNumber?: number;
   duration: number;
   file: File;
   url: string;
   cover?: string;
+  lyrics?: string;
+  genre?: string;
   isLiked?: boolean;
 }
 
@@ -20,6 +24,7 @@ export interface PlayerState {
   repeatMode: 'none' | 'all' | 'one';
   shuffle: boolean;
   searchQuery: string;
+  showLyrics: boolean;
 }
 
 export interface PlayerActions {
@@ -39,4 +44,5 @@ export interface PlayerActions {
   prevTrack: () => void;
   toggleLikeTrack: (trackId: string) => void;
   setSearchQuery: (query: string) => void;
+  toggleShowLyrics: () => void;
 }

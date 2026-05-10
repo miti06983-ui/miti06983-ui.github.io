@@ -12,7 +12,8 @@ import {
   Mic,
   ListMusic,
   Maximize2,
-  Heart
+  Heart,
+  Lyrics
 } from 'lucide-react';
 import { usePlayerStore } from '../store/usePlayerStore';
 import { formatTime } from '../utils';
@@ -44,7 +45,9 @@ const PlayerBar: React.FC<PlayerBarProps> = ({ className }) => {
     toggleShuffle,
     nextTrack,
     prevTrack,
-    toggleLikeTrack
+    toggleLikeTrack,
+    toggleShowLyrics,
+    showLyrics
   } = usePlayerStore();
 
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -142,7 +145,7 @@ const PlayerBar: React.FC<PlayerBarProps> = ({ className }) => {
                 <div className="w-8 h-8 bg-spotify-lightGray rounded" />
               </div>
             )}
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="text-white text-sm font-medium truncate hover:underline cursor-pointer">
                 {currentTrack.title}
               </p>
@@ -155,11 +158,10 @@ const PlayerBar: React.FC<PlayerBarProps> = ({ className }) => {
               className="text-spotify-lightGray hover:text-white ml-2"
             >
               <Heart 
-                className={`w-4 h-4 ${
-                  currentTrack.isLiked 
-                    ? 'text-spotify-green fill-spotify-green' 
-                    : ''
-                }`} 
+                className={cn(
+                  "w-4 h-4",
+                  currentTrack.isLiked ? "text-spotify-green fill-spotify-green" : ""
+                )}
               />
             </button>
           </>
@@ -242,6 +244,16 @@ const PlayerBar: React.FC<PlayerBarProps> = ({ className }) => {
       </div>
 
       <div className="flex items-center gap-3 w-[30%] justify-end">
+        <button 
+          onClick={toggleShowLyrics}
+          className={cn(
+            "text-spotify-lightGray hover:text-white transition-colors",
+            showLyrics && "text-spotify-green"
+          )}
+          title="Show lyrics"
+        >
+          <Lyrics className="w-4 h-4" />
+        </button>
         <button className="text-spotify-lightGray hover:text-white">
           <Mic className="w-4 h-4" />
         </button>
