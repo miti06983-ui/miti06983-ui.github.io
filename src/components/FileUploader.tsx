@@ -69,19 +69,59 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
     
     try {
       const { parseBlob } = await import('music-metadata-browser');
-      const metadata = await parseBlob(file);
+      console.log('🎵 Parsing file:', file.name);
       
-      if (metadata.common.title) result.title = metadata.common.title;
-      if (metadata.common.artist) result.artist = metadata.common.artist;
-      if (metadata.common.album) result.album = metadata.common.album;
-      if (metadata.common.year) result.year = metadata.common.year.toString();
-      if (metadata.common.track?.no) result.trackNumber = metadata.common.track.no;
-      if (metadata.common.genre && metadata.common.genre.length > 0) {
-        result.genre = metadata.common.genre.join(', ');
+      const metadata = await parseBlob(file);
+      console.log('✅ Metadata loaded:', JSON.stringify(metadata, null, 2));
+      
+      // 详细输出 common 标签
+      if (metadata.common) {
+        console.log('📋 Common tags:', {
+          title: metadata.common.title,
+          artist: metadata.common.artist,
+          album: metadata.common.album,
+          year: metadata.common.year,
+          track: metadata.common.track,
+          genre: metadata.common.genre,
+          picture: metadata.common.picture?.length || 0,
+          lyrics: metadata.common.lyrics?.length || 0,
+        });
+        
+        // 直接提取字段
+        if (metadata.common.title) {
+          result.title = metadata.common.title;
+          console.log('✓ Title found:', result.title);
+        }
+        if (metadata.common.artist) {
+          result.artist = Array.isArray(metadata.common.artist) 
+            ? metadata.common.artist.join(', ') 
+            : metadata.common.artist;
+          console.log('✓ Artist found:', result.artist);
+        }
+        if (metadata.common.album) {
+          result.album = metadata.common.album;
+          console.log('✓ Album found:', result.album);
+        }
+        if (metadata.common.year) {
+          result.year = metadata.common.year.toString();
+          console.log('✓ Year found:', result.year);
+        }
+        if (metadata.common.track?.no) {
+          result.trackNumber = metadata.common.track.no;
+          console.log('✓ Track number found:', result.trackNumber);
+        }
+        if (metadata.common.genre && metadata.common.genre.length > 0) {
+          result.genre = metadata.common.genre.join(', ');
+          console.log('✓ Genre found:', result.genre);
+        }
       }
       
-      if (metadata.format.duration) result.duration = metadata.format.duration;
+      if (metadata.format?.duration) {
+        result.duration = metadata.format.duration;
+        console.log('✓ Duration found:', result.duration);
+      }
       
+      // 提取封面
       if (metadata.common.picture && metadata.common.picture.length > 0) {
         try {
           const pic = metadata.common.picture[0];
@@ -89,31 +129,37 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
           const uint8Array = data instanceof Uint8Array ? data : new Uint8Array(data as ArrayBuffer);
           const blob = new Blob([uint8Array], { type: pic.format || 'image/jpeg' });
           result.cover = URL.createObjectURL(blob);
+          console.log('✓ Cover found');
         } catch (coverError) {
           console.error('Failed to extract cover:', coverError);
         }
       }
       
+      // 提取歌词
       if (metadata.common.lyrics && metadata.common.lyrics.length > 0) {
         const lyricsData = metadata.common.lyrics[0];
         if (typeof lyricsData === 'string') {
           result.lyrics = parseLyrics(lyricsData);
+          console.log('✓ Lyrics found (string)');
         } else if (typeof lyricsData === 'object' && lyricsData !== null) {
           const lyricsObj = lyricsData as any;
           result.lyrics = parseLyrics(lyricsObj.text || '');
+          console.log('✓ Lyrics found (object)');
         }
       }
       
+      // 尝试从 native ID3 标签中提取
       const native = (metadata as any).native;
       if (native && !result.lyrics) {
+        console.log('📋 Checking native ID3 tags...');
         const id3Tags = native['ID3'] || native['id3'] || [];
         for (const tag of id3Tags) {
-          if (tag.id === 'USLT' || tag.id === 'SYLT' || tag.id === 'USLT: lyrics') {
+          console.log(`  Tag: ${tag.id} = ${JSON.stringify(tag.value)}`);
+          
+          if (tag.id === 'USLT' || tag.id === 'USLT: lyrics') {
             if (tag.value?.text) {
               result.lyrics = parseLyrics(tag.value.text);
-              break;
-            } else if (typeof tag.value === 'string') {
-              result.lyrics = parseLyrics(tag.value);
+              console.log('✓ Lyrics found from USLT');
               break;
             }
           }
@@ -121,9 +167,10 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
       }
       
     } catch (error) {
-      console.error('Metadata parsing error:', error);
+      console.error('❌ Metadata parsing error:', error);
     }
     
+    console.log('📤 Final result:', result);
     return result;
   };
 
@@ -166,6 +213,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
       }
     }
 
+    console.log('✅ Track created:', { title, artist, album, duration });
     return {
       id: generateId(),
       title,
@@ -191,7 +239,9 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
       return;
     }
 
+    console.log('📁 Processing', validFiles.length, 'files');
     const tracks = await Promise.all(validFiles.map(processFile));
+    console.log('✅ All tracks processed');
     
     if (playlist.length === 0) {
       setPlaylist(tracks);
