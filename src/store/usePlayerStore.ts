@@ -28,7 +28,17 @@ export const usePlayerStore = create<PlayerStore>((set) => ({
     playlist: state.playlist.filter(t => t.id !== trackId)
   })),
   
-  clearPlaylist: () => set({ playlist: [], currentTrack: null, isPlaying: false, searchQuery: '' }),
+  clearPlaylist: () => set((state) => {
+    state.playlist.forEach(track => {
+      if (track.url && track.url.startsWith('blob:')) {
+        URL.revokeObjectURL(track.url);
+      }
+    });
+    if (state.currentTrack?.url && state.currentTrack.url.startsWith('blob:')) {
+      URL.revokeObjectURL(state.currentTrack.url);
+    }
+    return { playlist: [], currentTrack: null, isPlaying: false, searchQuery: '' };
+  }),
   
   togglePlay: () => set((state) => ({ isPlaying: !state.isPlaying })),
   
