@@ -1,6 +1,0 @@
-{
-  "name": "Spotify ",
-  "description": "A high-fidelity Spotify-style music player that scans and plays your local music files using the File System Access API.",
-  "requestFramePermissions": [],
-  "majorCapabilities": []
-}
