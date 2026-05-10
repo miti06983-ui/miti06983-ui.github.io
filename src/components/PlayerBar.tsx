@@ -13,7 +13,7 @@ import {
   ListMusic,
   Maximize2,
   Heart,
-  Lyrics
+  Music2
 } from 'lucide-react';
 import { usePlayerStore } from '../store/usePlayerStore';
 import { formatTime } from '../utils';
@@ -271,7 +271,7 @@ const PlayerBar: React.FC<PlayerBarProps> = ({ className }) => {
           )}
           title="Show lyrics"
         >
-          <Lyrics className="w-4 h-4" />
+          <Music2 className="w-4 h-4" />
         </button>
         <button className="text-spotify-lightGray hover:text-white">
           <Mic className="w-4 h-4" />

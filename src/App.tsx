@@ -15,6 +15,7 @@ const App: React.FC = () => {
     toggleRepeat,
     toggleMute,
     setVolume,
+    volume,
     currentTrack,
     toggleShowLyrics,
     toggleShowImmersive
@@ -22,7 +23,6 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't handle shortcuts if typing in an input
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
         return;
       }
@@ -59,11 +59,11 @@ const App: React.FC = () => {
           break;
         case 'ArrowUp':
           e.preventDefault();
-          setVolume(v => Math.min(1, v + 0.1));
+          setVolume(Math.min(1, volume + 0.1));
           break;
         case 'ArrowDown':
           e.preventDefault();
-          setVolume(v => Math.max(0, v - 0.1));
+          setVolume(Math.max(0, volume - 0.1));
           break;
         case 'KeyL':
           if (e.ctrlKey || e.metaKey) {
@@ -78,7 +78,7 @@ const App: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [togglePlay, nextTrack, prevTrack, toggleShuffle, toggleRepeat, toggleMute, setVolume, currentTrack, toggleShowLyrics, toggleShowImmersive]);
+  }, [togglePlay, nextTrack, prevTrack, toggleShuffle, toggleRepeat, toggleMute, setVolume, volume, currentTrack, toggleShowLyrics, toggleShowImmersive]);
 
   return (
     <div className="h-screen flex flex-col bg-black text-white overflow-hidden">

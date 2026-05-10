@@ -11,7 +11,6 @@ import {
   VolumeX,
   Heart,
   X,
-  Maximize2,
   Minimize2,
   Music
 } from 'lucide-react';

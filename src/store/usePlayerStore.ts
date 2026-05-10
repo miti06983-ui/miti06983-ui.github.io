@@ -3,16 +3,7 @@ import { Track, PlayerState, PlayerActions } from '../types';
 
 interface PlayerStore extends PlayerState, PlayerActions {}
 
-const shuffleArray = <T>(array: T[]): T[] => {
-  const newArray = [...array];
-  for (let i = newArray.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-  }
-  return newArray;
-};
-
-export const usePlayerStore = create<PlayerStore>((set, get) => ({
+export const usePlayerStore = create<PlayerStore>((set) => ({
   currentTrack: null,
   playlist: [],
   isPlaying: false,
@@ -62,7 +53,7 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
     if (state.playlist.length === 0) return {};
     
     const currentIndex = state.currentTrack 
-      ? state.playlist.findIndex(t => t.id === state.currentTrack.id)
+      ? state.playlist.findIndex(t => t.id === state.currentTrack!.id)
       : -1;
     
     let nextIndex;
@@ -86,7 +77,7 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
     if (state.playlist.length === 0) return {};
     
     const currentIndex = state.currentTrack 
-      ? state.playlist.findIndex(t => t.id === state.currentTrack.id)
+      ? state.playlist.findIndex(t => t.id === state.currentTrack!.id)
       : -1;
     
     let prevIndex;

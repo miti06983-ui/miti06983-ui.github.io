@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Search, Library, Music, Plus, Heart } from 'lucide-react';
+import { Home, Search, Library, Music, Plus } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 

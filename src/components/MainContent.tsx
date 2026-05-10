@@ -15,7 +15,7 @@ interface MainContentProps {
 }
 
 const MainContent: React.FC<MainContentProps> = ({ className }) => {
-  const { playlist, currentTrack, searchQuery, setSearchQuery, clearPlaylist } = usePlayerStore();
+  const { playlist, searchQuery, setSearchQuery, clearPlaylist } = usePlayerStore();
 
   const filteredPlaylist = useMemo(() => {
     if (!searchQuery.trim()) return playlist;
@@ -98,7 +98,7 @@ const MainContent: React.FC<MainContentProps> = ({ className }) => {
                   <div className="text-right">Duration</div>
                 </div>
                 
-                {filteredPlaylist.map((track, index) => (
+                {filteredPlaylist.map((track) => (
                   <PlaylistItem key={track.id} track={track} index={playlist.indexOf(track)} />
                 ))}
               </div>

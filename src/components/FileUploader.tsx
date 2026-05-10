@@ -1,9 +1,9 @@
 import React, { useCallback } from 'react';
-import { Upload, FolderOpen } from 'lucide-react';
+import { Upload } from 'lucide-react';
 import { usePlayerStore } from '../store/usePlayerStore';
 import { Track } from '../types';
 import { generateId, isValidAudioFile } from '../utils';
-import { parseBlob, type IPicture, type ITextTag } from 'music-metadata-browser';
+import { parseBlob, type IPicture } from 'music-metadata-browser';
 
 interface FileUploaderProps {
   className?: string;
@@ -97,16 +97,15 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
       
       // Extract lyrics from various ID3 frames
       if (metadata.common.lyrics && metadata.common.lyrics.length > 0) {
-        lyrics = parseLyrics(metadata.common.lyrics[0].text);
+        lyrics = parseLyrics(metadata.common.lyrics[0]);
       } else if (metadata.common.comment && metadata.common.comment.length > 0) {
-        // Sometimes lyrics are stored in comments
         const lyricComment = metadata.common.comment.find(
-          (comment: ITextTag) => 
-            comment.text.toLowerCase().includes('lyric') || 
-            comment.text.toLowerCase().includes('歌词')
+          (comment: string) => 
+            (comment.toLowerCase().includes('lyric') || 
+            comment.toLowerCase().includes('歌词'))
         );
         if (lyricComment) {
-          lyrics = parseLyrics(lyricComment.text);
+          lyrics = parseLyrics(lyricComment);
         }
       }
       
