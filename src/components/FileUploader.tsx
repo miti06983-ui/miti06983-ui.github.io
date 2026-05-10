@@ -91,7 +91,8 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
       // Extract cover art from ID3 tags (APIC frame)
       if (metadata.common.picture && metadata.common.picture.length > 0) {
         const pic: IPicture = metadata.common.picture[0];
-        const blob = new Blob([pic.data], { type: pic.format });
+        const data = pic.data;
+        const blob = new Blob([data instanceof Uint8Array ? data : new Uint8Array(data as ArrayBuffer)], { type: pic.format });
         cover = URL.createObjectURL(blob);
       }
       
