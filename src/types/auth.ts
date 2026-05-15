@@ -20,6 +20,7 @@ export interface AuthActions {
   clearError: () => void;
   getUsers: () => User[];
   getUserById: (id: string) => User | undefined;
+  initAuth: () => Promise<void>;
 }
 
 export type AuthStore = AuthState & AuthActions;

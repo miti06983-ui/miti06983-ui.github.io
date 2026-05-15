@@ -8,6 +8,7 @@ import { AuthModal } from './components/Auth';
 import { SettingsModal } from './components/Settings';
 import { usePlayerStore } from './store/usePlayerStore';
 import { useAuthStore } from './store/useAuthStore';
+import { useSettingsStore } from './store/useSettingsStore';
 
 const App: React.FC = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -28,7 +29,17 @@ const App: React.FC = () => {
     toggleShowImmersive
   } = usePlayerStore();
   
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, initAuth } = useAuthStore();
+  const { loadSettings } = useSettingsStore();
+
+  useEffect(() => {
+    // Initialize auth and load settings on app start
+    initAuth().then(() => {
+      if (isAuthenticated) {
+        loadSettings();
+      }
+    });
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

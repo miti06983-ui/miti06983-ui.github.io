@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { apiClient } from '../api/client';
 
 export interface AudioSettings {
   volume: number;
@@ -88,6 +89,8 @@ export interface SettingsState {
   setStorageSetting: <K extends keyof StorageSettings>(key: K, value: StorageSettings[K]) => void;
   setNetworkSetting: <K extends keyof NetworkSettings>(key: K, value: NetworkSettings[K]) => void;
   resetSettings: () => void;
+  loadSettings: () => Promise<void>;
+  syncSettings: () => Promise<void>;
 }
 
 const defaultSettings = {
@@ -158,45 +161,78 @@ const defaultSettings = {
 
 export const useSettingsStore = create<SettingsState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       ...defaultSettings,
 
-      setAudioSetting: (key, value) =>
-        set((state) => ({
-          audio: { ...state.audio, [key]: value },
-        })),
+      setAudioSetting: async (key, value) => {
+        set((state) => ({ audio: { ...state.audio, [key]: value } }));
+        await get().syncSettings();
+      },
 
-      setDisplaySetting: (key, value) =>
-        set((state) => ({
-          display: { ...state.display, [key]: value },
-        })),
+      setDisplaySetting: async (key, value) => {
+        set((state) => ({ display: { ...state.display, [key]: value } }));
+        await get().syncSettings();
+      },
 
-      setPlaybackSetting: (key, value) =>
-        set((state) => ({
-          playback: { ...state.playback, [key]: value },
-        })),
+      setPlaybackSetting: async (key, value) => {
+        set((state) => ({ playback: { ...state.playback, [key]: value } }));
+        await get().syncSettings();
+      },
 
-      setNotificationSetting: (key, value) =>
-        set((state) => ({
-          notifications: { ...state.notifications, [key]: value },
-        })),
+      setNotificationSetting: async (key, value) => {
+        set((state) => ({ notifications: { ...state.notifications, [key]: value } }));
+        await get().syncSettings();
+      },
 
-      setPrivacySetting: (key, value) =>
-        set((state) => ({
-          privacy: { ...state.privacy, [key]: value },
-        })),
+      setPrivacySetting: async (key, value) => {
+        set((state) => ({ privacy: { ...state.privacy, [key]: value } }));
+        await get().syncSettings();
+      },
 
-      setStorageSetting: (key, value) =>
-        set((state) => ({
-          storage: { ...state.storage, [key]: value },
-        })),
+      setStorageSetting: async (key, value) => {
+        set((state) => ({ storage: { ...state.storage, [key]: value } }));
+        await get().syncSettings();
+      },
 
-      setNetworkSetting: (key, value) =>
-        set((state) => ({
-          network: { ...state.network, [key]: value },
-        })),
+      setNetworkSetting: async (key, value) => {
+        set((state) => ({ network: { ...state.network, [key]: value } }));
+        await get().syncSettings();
+      },
 
-      resetSettings: () => set(defaultSettings),
+      resetSettings: async () => {
+        try {
+          const data = await apiClient.resetSettings();
+          set({ ...data.settings });
+        } catch (error) {
+          set(defaultSettings);
+        }
+      },
+
+      loadSettings: async () => {
+        try {
+          const data = await apiClient.getSettings();
+          set({ ...data.settings });
+        } catch (error) {
+          console.error('Failed to load settings:', error);
+        }
+      },
+
+      syncSettings: async () => {
+        try {
+          const state = get();
+          await apiClient.updateSettings({
+            audio: state.audio,
+            display: state.display,
+            playback: state.playback,
+            notifications: state.notifications,
+            privacy: state.privacy,
+            storage: state.storage,
+            network: state.network,
+          });
+        } catch (error) {
+          console.error('Failed to sync settings:', error);
+        }
+      },
     }),
     {
       name: 'music-player-settings',
